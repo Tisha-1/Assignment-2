@@ -170,6 +170,15 @@ def get_neighbors(r, c):
             neighbors.append((nr, nc))
     return neighbors
 
+# Reconstructs the path from goal to start using the came_from dict
+def reconstruct_path(came_from, current):
+    path = []
+    while current in came_from:
+        path.append(current)
+        current = came_from[current]
+    path.reverse()
+    return path
+
 # Heuristic for A* (Euclidean distance)
 def heuristic(a, b):
     ax, ay = hex_to_pixel(*a)
@@ -186,12 +195,7 @@ def a_star(start, goal):
         _, current = heapq.heappop(open_set)
 
         if current == goal:
-            path = []
-            while current in came_from:
-                path.append(current)
-                current = came_from[current]
-            path.reverse()
-            return path
+            return reconstruct_path(came_from, current)
 
         for neighbor in get_neighbors(*current):
             cost = 1
@@ -213,6 +217,7 @@ def main():
     clock = pygame.time.Clock()
     player_r, player_c = find_start()  # Start position
     path = []
+    full_path_taken = []
     running = True
 
     while running:
@@ -241,7 +246,11 @@ def main():
 
         # Game over conditions
         if health <= 0 or collected_treasures == all_treasures:
-            print("Game Over" if health <= 0 else "All Treasures Found!")
+            if collected_treasures == all_treasures:
+                print("All Treasures Found!")
+                print("Full path taken by player:", full_path_taken)
+            else:
+                print("Game Over")
             pygame.time.wait(2000)
             running = False
 
@@ -257,6 +266,12 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and path:
                     player_r, player_c = path.pop(0)
+  	
+        # When player moves along path via SPACE:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and path:
+                player_r, player_c = path.pop(0)
+                full_path_taken.append((player_r, player_c))
 
         # Arrow key movement
         keys = pygame.key.get_pressed()
@@ -271,6 +286,7 @@ def main():
                 nr, nc = player_r + dr, player_c + dc
                 if 0 <= nr < ROWS and 0 <= nc < COLS and grid[nr][nc] != BLOCKED:
                     player_r, player_c = nr, nc
+                    full_path_taken.append((player_r, player_c))
                 break
 
     pygame.quit()  # Close the game
