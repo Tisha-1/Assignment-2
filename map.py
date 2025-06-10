@@ -1,7 +1,8 @@
 # Import libraries
 import pygame                       # For rendering graphics and handling input
 import math                         # For mathematical functions (especially hexagon geometry)
-import heapq                        # For priority queue in A* pathfinding
+import heapq                       
+from itertools import permutations  #imports and constants remain unchanged
 
 # ------------------------ Map Definitions ------------------------ #
 START    = 'S'                      # Start tile symbol
@@ -184,7 +185,8 @@ def heuristic(a, b):
     ax, ay = hex_to_pixel(*a)
     bx, by = hex_to_pixel(*b)
     return math.hypot(ax - bx, ay - by)
-
+'''
+'''
 # A* pathfinding implementation
 def a_star(start, goal):
     open_set = [(0, start)]
@@ -210,6 +212,7 @@ def a_star(start, goal):
                 heapq.heappush(open_set, (f_score, neighbor))
 
     return []
+'''
 
 # ------------------------ Main Game Loop ------------------------ #
 def main():
@@ -253,7 +256,9 @@ def main():
                 print("Game Over")
             pygame.time.wait(2000)
             running = False
+        '''
 
+        '''
         # Handle mouse clicks and key presses
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -261,18 +266,15 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mx, my = pygame.mouse.get_pos()
                 r, c = pixel_to_hex(mx, my)
-                if r is not None and (r, c) != (player_r, player_c):
-                    path = a_star((player_r, player_c), (r, c))
+                if r is not None:
+                    #Compute best path covering all treasures
+                    remaining_treasures = [t for t in all_treasures if t not in collected_treasures]
+                    if remaining_treasures:
+                        path = find_best_treasure_path((player_r, player_c), remaining_treasures)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and path:
                     player_r, player_c = path.pop(0)
-  	
-        # When player moves along path via SPACE:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and path:
-                player_r, player_c = path.pop(0)
-                full_path_taken.append((player_r, player_c))
-
+                    
         # Arrow key movement
         keys = pygame.key.get_pressed()
         directions = {
