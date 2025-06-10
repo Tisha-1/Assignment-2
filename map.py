@@ -212,7 +212,6 @@ def a_star(start, goal):
                 heapq.heappush(open_set, (f_score, neighbor))
 
     return []
-'''
 
 # ------------------------ Main Game Loop ------------------------ #
 def main():
@@ -256,9 +255,7 @@ def main():
                 print("Game Over")
             pygame.time.wait(2000)
             running = False
-        '''
 
-        '''
         # Handle mouse clicks and key presses
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
