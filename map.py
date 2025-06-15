@@ -94,6 +94,105 @@ def find_start():
                 return r, c
     return 0, 0
 
+# Gets all valid neighbors of a tile in hex grid
+def get_neighbors(r, c):
+    even = (c % 2 == 0)
+    dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    dirs += [(-1 if even else 0, -1), (-1 if even else 0, 1)] if even else [(1, -1), (1, 1)]
+    neighbors = []
+    for dr, dc in dirs:
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < ROWS and 0 <= nc < COLS and grid[nr][nc] != BLOCKED:
+            neighbors.append((nr, nc))
+    return neighbors
+
+# Reconstructs the path from goal to start using the came_from dict
+def reconstruct_path(came_from, current):
+    path = []
+    while current in came_from:
+        path.append(current)
+        current = came_from[current]
+    path.reverse()
+    return path
+
+# ------------------------ Pathfinding Algorithms ------------------------ #
+
+# Finds the best path to collect all treasures
+def find_best_treasure_path(start_pos, treasures, return_to_start=False):
+    if not treasures:
+        return []
+
+    best_path = []
+    min_total_cost = float('inf')
+
+    # Generate all possible orders of visiting treasures
+    for order in permutations(treasures):
+        current_pos = start_pos
+        total_path = []
+        total_cost = 0
+        valid = True
+
+        # Visit each treasure in current order
+        for target in order:
+            path_segment, cost = ucs(current_pos, target)
+            if not path_segment:
+                valid = False
+                break
+            total_path += path_segment
+            total_cost += cost
+            current_pos = target
+
+        # Optionally return to start after collecting all treasures
+        if valid and return_to_start:
+            return_path, return_cost = ucs(current_pos, start_pos)
+            if return_path:
+                total_path += return_path
+                total_cost += return_cost
+            else:
+                valid = False
+
+        # Update best path if current permutation is better
+        if valid and total_cost < min_total_cost:
+            min_total_cost = total_cost
+            best_path = total_path
+
+    return best_path
+
+# Uniform-Cost Search Algorithm
+def ucs(start, goal):
+    open_set = [(0, start)]  # (cost, position)
+    came_from = {}
+    cost_so_far = {start: 0}
+
+    while open_set:
+        current_cost, current = heapq.heappop(open_set)
+
+        if current == goal:
+            path = []
+            while current in came_from:
+                path.append(current)
+                current = came_from[current]
+            path.reverse()
+            return path, cost_so_far[goal]
+        
+        for neighbor in get_neighbors(*current):
+            tile = grid[neighbor[0]][neighbor[1]]
+            step_cost = 1.0  # Base cost
+
+            # Apply trap/reward modifiers
+            if tile in TRAPS:
+                continue
+            elif tile in REWARDS:
+                step_cost *= 0.5
+
+            new_cost = current_cost + step_cost
+            if neighbor not in cost_so_far or new_cost < cost_so_far[neighbor]:
+                cost_so_far[neighbor] = new_cost
+                came_from[neighbor] = current
+                heapq.heappush(open_set, (new_cost, neighbor))
+
+    return [], float('inf')
+
 # ------------------------ Drawing Functions ------------------------ #
 
 pygame.init()                             # Initialize pygame
@@ -157,20 +256,6 @@ def display_description(desc):
     rect = text.get_rect(center=(WIDTH // 2, HEIGHT - 110))
     screen.blit(text, rect)
 
-# ------------------------ Game Logic ------------------------ #
-
-# Gets all valid neighbors of a tile in hex grid
-def get_neighbors(r, c):
-    even = (c % 2 == 0)
-    dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-    dirs += [(-1 if even else 0, -1), (-1 if even else 0, 1)] if even else [(1, -1), (1, 1)]
-    neighbors = []
-    for dr, dc in dirs:
-        nr, nc = r + dr, c + dc
-        if 0 <= nr < ROWS and 0 <= nc < COLS and grid[nr][nc] != BLOCKED:
-            neighbors.append((nr, nc))
-    return neighbors
-
 # Reconstructs the path from goal to start using the came_from dict
 def reconstruct_path(came_from, current):
     path = []
@@ -179,42 +264,24 @@ def reconstruct_path(came_from, current):
         current = came_from[current]
     path.reverse()
     return path
+# ------------------------ Game Logic ------------------------ #
 
-#---------------------Function to visit all treasures-----------------------#
-def find_best_treasure_path(start_pos, treasures):
-    best_path = []
-    min_total_cost = float('inf')
-
-    for order in permutations(treasures):
-        current_pos = start_pos
-        total_path = []
-        total_cost = 0
-        valid = True
-
-        for target in order:
-            path_segment, cost = ucs(current_pos, target)
-            if not path_segment:
-                valid = False
-                break
-            total_path += path_segment
-            total_cost += cost
-            current_pos = target
-
-        if valid and total_cost < min_total_cost:
-            min_total_cost = total_cost
-            best_path = total_path
-
-    return best_path
-
-#-------------------------------Uniform-Cost Search Algorithm----------------------------#
-def ucs(start, goal):
-    #(cost, position)
+'''
+# Heuristic for A* (Euclidean distance)
+def heuristic(a, b):
+    ax, ay = hex_to_pixel(*a)
+    bx, by = hex_to_pixel(*b)
+    return math.hypot(ax - bx, ay - by)
+'''
+'''
+# A* pathfinding implementation
+def a_star(start, goal):
     open_set = [(0, start)]
     came_from = {}
-    cost_so_far = {start: 0}
+    g_score = {start: 0}
 
     while open_set:
-        current_cost, current = heapq.heappop(open_set)
+        _, current = heapq.heappop(open_set)
 
         if current == goal:
             path = []
@@ -222,25 +289,22 @@ def ucs(start, goal):
                 path.append(current)
                 current = came_from[current]
             path.reverse()
-            return path, cost_so_far[goal]
-        
+            return path
+
         for neighbor in get_neighbors(*current):
+            cost = 1
             tile = grid[neighbor[0]][neighbor[1]]
-            #Base minmax cost
-            step_cost = 1.0
-
-            if tile == 'X1' or tile == 'X2':
-                step_cost *= 2
-            elif tile == 'R1' or tile == 'R2':
-                step_cost *= 0.5
-
-            new_cost = current_cost + step_cost
-            if neighbor not in cost_so_far or new_cost < cost_so_far[neighbor]:
-                cost_so_far[neighbor] = new_cost
+            if tile == 'X1': cost *= 2
+            if tile == 'R1': cost *= 0.5
+            tentative_g = g_score[current] + cost
+            if neighbor not in g_score or tentative_g < g_score[neighbor]:
                 came_from[neighbor] = current
-                heapq.heappush(open_set, (new_cost, neighbor))
+                g_score[neighbor] = tentative_g
+                f_score = tentative_g + heuristic(neighbor, goal)
+                heapq.heappush(open_set, (f_score, neighbor))
 
-    return [], float('inf')
+    return []
+'''
 
 # ------------------------ Main Game Loop ------------------------ #
 def main():
@@ -248,7 +312,6 @@ def main():
     clock = pygame.time.Clock()
     player_r, player_c = find_start()  # Start position
     path = []
-    full_path_taken = []
     running = True
 
     while running:
@@ -277,14 +340,23 @@ def main():
 
         # Game over conditions
         if health <= 0 or collected_treasures == all_treasures:
-            if collected_treasures == all_treasures:
-                print("All Treasures Found!")
-                print("Full path taken by player:", full_path_taken)
-            else:
-                print("Game Over")
+            print("Game Over" if health <= 0 else "All Treasures Found!")
             pygame.time.wait(2000)
             running = False
-
+        '''
+        # Handle mouse clicks and key presses
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mx, my = pygame.mouse.get_pos()
+                r, c = pixel_to_hex(mx, my)
+                if r is not None and (r, c) != (player_r, player_c):
+                    path = a_star((player_r, player_c), (r, c))
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and path:
+                    player_r, player_c = path.pop(0)
+        '''
         # Handle mouse clicks and key presses
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -314,7 +386,6 @@ def main():
                 nr, nc = player_r + dr, player_c + dc
                 if 0 <= nr < ROWS and 0 <= nc < COLS and grid[nr][nc] != BLOCKED:
                     player_r, player_c = nr, nc
-                    full_path_taken.append((player_r, player_c))
                 break
 
     pygame.quit()  # Close the game
