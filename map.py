@@ -372,7 +372,8 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and path:
                     player_r, player_c = path.pop(0)
-                    
+
+        '''
         # Arrow key movement
         keys = pygame.key.get_pressed()
         directions = {
@@ -389,7 +390,7 @@ def main():
                 break
 
     pygame.quit()  # Close the game
-
+    '''
 # Entry point
 if __name__ == "__main__":
     main()
