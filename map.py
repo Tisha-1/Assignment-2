@@ -1,4 +1,5 @@
 # Import libraries
+from importlib.resources import path
 import pygame                       # For rendering graphics and handling input
 import math                         # For mathematical functions (especially hexagon geometry)
 import heapq                       
@@ -266,41 +267,17 @@ def reconstruct_path(came_from, current):
 
 # ======================== INPUT AND OUTPUT HANDLING ======================== #
 
-# Loads the grid layout from a text file, if it exists
-def load_grid_from_file(filename):   
-    try:
-        with open(filename, 'r') as file:
-            grid = []
-            for line in file:
-                row = line.strip().split()
-                if row:
-                    grid.append(row)
-            print(f"Grid loaded from {filename}")
-            return grid
-    except FileNotFoundError:
-        print(f"File {filename} not found. Using default grid.")
-        return None
-    
-# Save the solution to a text file
-def save_solution(filename, path, treasures_found, total_treasures):
-    try:
-        with open(filename, 'w') as file:
-            file.write("TREASURE HUNT SOLUTION\n")
-            file.write("=====================\n\n")
-            file.write(f"Treasures collected: {treasures_found}/{total_treasures}\n")
-            file.write(f"Total steps: {len(path)}\n")
-            file.write(f"Path taken: {path}\n")
-        print(f"Solution saved to {filename}")
-    except Exception as e:
-        print(f"Error saving file: {e}")
+def save_results(path, collected, filename="results.txt"):
+    with open(filename, "w") as f:
+        f.write("Path:\n")
+        for step in path:
+            f.write(f"{step}\n")
+        f.write(f"\nTreasures Collected: {len(collected)}\n")
+        f.write(f"Total Treasures: {len(all_treasures)}\n")
 
-# Prints the solution to the console
-def print_solution(path, treasures_found, total_treasures):
-    print("\n=== SOLUTION ===")
-    print(f"Treasures: {treasures_found}/{total_treasures}")
-    print(f"Steps: {len(path)}")
-    print(f"Path: {path}")
-    print("================")
+def load_grid_from_file(filename="grid.txt"):
+    with open(filename, "r") as f:
+        return [line.strip().split(",") for line in f.readlines()]
 
 # ------------------------ Main Game Loop ------------------------ #
 def main():
@@ -308,6 +285,7 @@ def main():
     player_r, player_c = find_start()  # Start position
     path = []
     running = True
+    health = 10
 
     while running:
         clock.tick(10)  # Limit FPS
@@ -341,14 +319,25 @@ def main():
                 mx, my = pygame.mouse.get_pos()
                 r, c = pixel_to_hex(mx, my)
                 if r is not None:
-                    #Compute best path covering all treasures
                     remaining_treasures = [t for t in all_treasures if t not in collected_treasures]
                     if remaining_treasures:
                         path = find_best_treasure_path((player_r, player_c), remaining_treasures)
+                        for step in path:
+                            player_r, player_c = step
+                            if (player_r, player_c) in all_treasures:
+                                collected_treasures.add((player_r, player_c))
+                            draw_grid((player_r, player_c), path)
+                            pygame.display.flip()
+                            pygame.time.delay(200) 
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and path:
                     player_r, player_c = path.pop(0)
-
+    save_results(path, collected_treasures)
+    print("Collected treasures:", len(collected_treasures))
+    print("Total treasures:", len(all_treasures))
+    print("Final path:", path)
 # Entry point
 if __name__ == "__main__":
     main()
+
+
