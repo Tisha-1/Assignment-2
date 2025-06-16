@@ -106,14 +106,6 @@ def get_neighbors(r, c):
             neighbors.append((nr, nc))
     return neighbors
 
-# Reconstructs the path from goal to start using the came_from dict
-def reconstruct_path(came_from, current):
-    path = []
-    while current in came_from:
-        path.append(current)
-        current = came_from[current]
-    path.reverse()
-    return path
 # ------------------------ Pathfinding Algorithms ------------------------ #
 
 # Finds the best path to collect all treasures
