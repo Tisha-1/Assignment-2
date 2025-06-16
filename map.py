@@ -1,5 +1,4 @@
 # Import libraries
-from importlib.resources import path
 import pygame                       # For rendering graphics and handling input
 import math                         # For mathematical functions (especially hexagon geometry)
 import heapq                       
