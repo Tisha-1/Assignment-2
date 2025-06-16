@@ -200,7 +200,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT)) # Create display
 pygame.display.set_caption("Hex Grid Treasure Hunt") # Window title
 font = pygame.font.SysFont('Arial', 18)   # Font for text
 
-health = 10                               # Initial health
 collected_treasures = set()              # Tracks collected treasures
 all_treasures = {(r, c) for r in range(ROWS) for c in range(COLS) if grid[r][c] == TREASURE} # All treasures in the grid
 
@@ -305,7 +304,6 @@ def print_solution(path, treasures_found, total_treasures):
 
 # ------------------------ Main Game Loop ------------------------ #
 def main():
-    global health
     clock = pygame.time.Clock()
     player_r, player_c = find_start()  # Start position
     path = []
