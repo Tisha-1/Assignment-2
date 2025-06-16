@@ -264,47 +264,7 @@ def reconstruct_path(came_from, current):
         current = came_from[current]
     path.reverse()
     return path
-# ------------------------ Game Logic ------------------------ #
 
-'''
-# Heuristic for A* (Euclidean distance)
-def heuristic(a, b):
-    ax, ay = hex_to_pixel(*a)
-    bx, by = hex_to_pixel(*b)
-    return math.hypot(ax - bx, ay - by)
-'''
-'''
-# A* pathfinding implementation
-def a_star(start, goal):
-    open_set = [(0, start)]
-    came_from = {}
-    g_score = {start: 0}
-
-    while open_set:
-        _, current = heapq.heappop(open_set)
-
-        if current == goal:
-            path = []
-            while current in came_from:
-                path.append(current)
-                current = came_from[current]
-            path.reverse()
-            return path
-
-        for neighbor in get_neighbors(*current):
-            cost = 1
-            tile = grid[neighbor[0]][neighbor[1]]
-            if tile == 'X1': cost *= 2
-            if tile == 'R1': cost *= 0.5
-            tentative_g = g_score[current] + cost
-            if neighbor not in g_score or tentative_g < g_score[neighbor]:
-                came_from[neighbor] = current
-                g_score[neighbor] = tentative_g
-                f_score = tentative_g + heuristic(neighbor, goal)
-                heapq.heappush(open_set, (f_score, neighbor))
-
-    return []
-'''
 # ======================== INPUT AND OUTPUT HANDLING ======================== #
 
 # Loads the grid layout from a text file, if it exists
@@ -380,20 +340,7 @@ def main():
             print("Game Over" if health <= 0 else "All Treasures Found!")
             pygame.time.wait(2000)
             running = False
-        '''
-        # Handle mouse clicks and key presses
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mx, my = pygame.mouse.get_pos()
-                r, c = pixel_to_hex(mx, my)
-                if r is not None and (r, c) != (player_r, player_c):
-                    path = a_star((player_r, player_c), (r, c))
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and path:
-                    player_r, player_c = path.pop(0)
-        '''
+
         # Handle mouse clicks and key presses
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -410,24 +357,6 @@ def main():
                 if event.key == pygame.K_SPACE and path:
                     player_r, player_c = path.pop(0)
 
-        '''
-        # Arrow key movement
-        keys = pygame.key.get_pressed()
-        directions = {
-            pygame.K_UP:    (-1, 0),
-            pygame.K_DOWN:  (1, 0),
-            pygame.K_LEFT:  (0, -1),
-            pygame.K_RIGHT: (0, 1),
-        }
-        for key, (dr, dc) in directions.items():
-            if keys[key]:
-                nr, nc = player_r + dr, player_c + dc
-                if 0 <= nr < ROWS and 0 <= nc < COLS and grid[nr][nc] != BLOCKED:
-                    player_r, player_c = nr, nc
-                break
-
-    pygame.quit()  # Close the game
-    '''
 # Entry point
 if __name__ == "__main__":
     main()
