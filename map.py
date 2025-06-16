@@ -54,7 +54,7 @@ TileInfo = {
     'X4': "Trap 4: Destroys all uncollected treasures.",
     'R1': "Reward 1: Decreases gravity — step costs half energy.",
     'R2': "Reward 2: Increases speed — moves cost half steps.",
-    'T':  "Treasure! You found one!",
+    'T':  "Treasure! You found it!",
     '':   "Empty Tile",
     '#':  "Blocked Tile",
     'S':  "Start Position"
@@ -265,18 +265,15 @@ def reconstruct_path(came_from, current):
 
 # ======================== INPUT AND OUTPUT HANDLING ======================== #
 
+# Saves the path and collected treasures to a file
 def save_results(path, collected, filename="results.txt"):
     with open(filename, "w") as f:
-        f.write("Path:\n")
+        f.write("Final Path:\n")
         for step in path:
             f.write(f"{step}\n")
         f.write(f"\nTreasures Collected: {len(collected)}\n")
         f.write(f"Total Treasures: {len(all_treasures)}\n")
-
-def load_grid_from_file(filename="grid.txt"):
-    with open(filename, "r") as f:
-        return [line.strip().split(",") for line in f.readlines()]
-
+        f.write("Goodjob!")
 # ------------------------ Main Game Loop ------------------------ #
 def main():
     clock = pygame.time.Clock()
