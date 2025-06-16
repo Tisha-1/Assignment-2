@@ -244,7 +244,7 @@ def draw_legend():
 
 # Shows player's health and treasure count
 def draw_status():
-    status = f"Health: {health} | Treasures: {len(collected_treasures)}/{len(all_treasures)}"
+    status = f"Treasures: {len(collected_treasures)}/{len(all_treasures)}"
     text = font.render(status, True, (255, 255, 255))
     screen.blit(text, (10, HEIGHT - 90))
 
@@ -332,12 +332,6 @@ def main():
                 if (r, c) not in collected_treasures:
                     grid[r][c] = ''
                     all_treasures.remove((r, c))
-
-        # Game over conditions
-        if health <= 0 or collected_treasures == all_treasures:
-            print("Game Over" if health <= 0 else "All Treasures Found!")
-            pygame.time.wait(2000)
-            running = False
 
         # Handle mouse clicks and key presses
         for event in pygame.event.get():
