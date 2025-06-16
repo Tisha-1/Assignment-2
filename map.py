@@ -305,6 +305,43 @@ def a_star(start, goal):
 
     return []
 '''
+# ======================== INPUT AND OUTPUT HANDLING ======================== #
+
+# Loads the grid layout from a text file, if it exists
+def load_grid_from_file(filename):   
+    try:
+        with open(filename, 'r') as file:
+            grid = []
+            for line in file:
+                row = line.strip().split()
+                if row:
+                    grid.append(row)
+            print(f"Grid loaded from {filename}")
+            return grid
+    except FileNotFoundError:
+        print(f"File {filename} not found. Using default grid.")
+        return None
+    
+# Save the solution to a text file
+def save_solution(filename, path, treasures_found, total_treasures):
+    try:
+        with open(filename, 'w') as file:
+            file.write("TREASURE HUNT SOLUTION\n")
+            file.write("=====================\n\n")
+            file.write(f"Treasures collected: {treasures_found}/{total_treasures}\n")
+            file.write(f"Total steps: {len(path)}\n")
+            file.write(f"Path taken: {path}\n")
+        print(f"Solution saved to {filename}")
+    except Exception as e:
+        print(f"Error saving file: {e}")
+
+# Prints the solution to the console
+def print_solution(path, treasures_found, total_treasures):
+    print("\n=== SOLUTION ===")
+    print(f"Treasures: {treasures_found}/{total_treasures}")
+    print(f"Steps: {len(path)}")
+    print(f"Path: {path}")
+    print("================")
 
 # ------------------------ Main Game Loop ------------------------ #
 def main():
