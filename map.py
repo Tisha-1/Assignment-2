@@ -98,7 +98,10 @@ def find_start():
 def get_neighbors(r, c):
     even = (c % 2 == 0)
     dirs = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-    dirs += [(-1 if even else 0, -1), (-1 if even else 0, 1)] if even else [(1, -1), (1, 1)]
+    if even:
+        dirs += [(-1, -1), (-1, 1)]
+    else:
+        dirs += [(1, -1), (1, 1)]
     neighbors = []
     for dr, dc in dirs:
         nr, nc = r + dr, c + dc
