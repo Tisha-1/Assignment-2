@@ -324,7 +324,11 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and path:
                     player_r, player_c = path.pop(0)
-
+                    
+    save_results(path, collected_treasures)
+    print("Collected treasures:", len(collected_treasures))
+    print("Total treasures:", len(all_treasures))
+    print("Final path:", path)
 # Entry point
 if __name__ == "__main__":
     main()
