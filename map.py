@@ -268,6 +268,7 @@ def save_results(path, collected, filename="results.txt"):
         f.write(f"\nTreasures Collected: {len(collected)}\n")
         f.write(f"Total Treasures: {len(all_treasures)}\n")
         f.write("Goodjob!")
+
 # ------------------------ Main Game Loop ------------------------ #
 def main():
     clock = pygame.time.Clock()
@@ -312,21 +313,18 @@ def main():
                     if remaining_treasures:
                         path = find_best_treasure_path((player_r, player_c), remaining_treasures)
                         for step in path:
-                            player_r, player_c = step
-                            if (player_r, player_c) in all_treasures:
-                                collected_treasures.add((player_r, player_c))
-                            draw_grid((player_r, player_c), path)
+                            current_r, current_c = step 
+                            if (current_r, current_c) in all_treasures:
+                                collected_treasures.add((current_r, current_c))
+                            draw_grid((current_r, current_c), path)
                             pygame.display.flip()
-                            pygame.time.delay(200) 
+                            pygame.time.delay(200)
+                        if path:
+                            player_r, player_c = path[-1]
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and path:
                     player_r, player_c = path.pop(0)
-    save_results(path, collected_treasures)
-    print("Collected treasures:", len(collected_treasures))
-    print("Total treasures:", len(all_treasures))
-    print("Final path:", path)
+
 # Entry point
 if __name__ == "__main__":
     main()
-
-
